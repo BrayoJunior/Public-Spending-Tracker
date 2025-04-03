@@ -1,13 +1,26 @@
-# Sample Hardhat Project
+# Public Spending Tracker
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+Decentralized public spending by the government and it's entities like schools, ministries,etc. Logs every meant for public spending in real-time with on-chain records.
 
-Try running some of the following tasks:
+## Features
+- Dashboard for entities (Government, School, etc.).
+- Real-time transaction logging on EDU Chain.
+- Built with React, Hardhat, and Ethereum.
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/Lock.js
-```
+## Setup
+1. **Clone**: `git clone https://github.com/your-username/public-spending-tracker.git`
+2. **Backend**:
+   - `cd backend`
+   - `npm install`
+   - Create `.env` with `ADMIN_PRIVATE_KEY` (see `.env.example`)
+   - `node index.js`
+3. **Frontend**:
+   - `cd frontend`
+   - `npm install`
+   - `npm start`
+
+## Contract
+- Address: `0x1119731e98897d8aeAFC7C93a0f2747f3370965f`
+- Verified on [Blockscout](https://opencampus-codex.blockscout.com/address/0x1119731e98897d8aeAFC7C93a0f2747f3370965f)
+
+## Video
