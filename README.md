@@ -8,7 +8,7 @@ Decentralized public spending by the government and it's entities like schools, 
 - Built with React, Hardhat, and Ethereum.
 
 ## Setup
-1. **Clone**: `git clone https://github.com/your-username/Public-Spending-Tracker.git`
+1. **Clone**: `git clone https://github.com/BrayoJunior/Public-Spending-Tracker.git`
 2. **Backend**:
    - `cd backend`
    - `npm install`
