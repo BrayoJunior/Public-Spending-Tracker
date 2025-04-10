@@ -16,6 +16,7 @@ function App() {
   const [selectedTx, setSelectedTx] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [lastTransactionId, setLastTransactionId] = useState(null);
+  const [loading, setLoading] = useState(false); // New loading state
 
   const entities = {
     government: { name: "Government", address: "0x3118E24391693A8431AF6c44bd85C89d7a26BF36" },
@@ -34,9 +35,9 @@ function App() {
         const events = await contract.queryFilter(filter, 0, "latest");
         const logs = events.map((event) => ({
           hash: event.transactionHash,
-          entity: event.args.entity,
-          amount: ethers.formatUnits(event.args.amount, 0),
+          entity: event.args.sender, // Use sender from event
           recipient: event.args.recipient,
+          amount: ethers.formatUnits(event.args.amount, 0),
           purpose: event.args.purpose,
           currency: event.args.currency,
           timestamp: new Date(Number(event.args.timestamp) * 1000).toISOString(),
@@ -63,6 +64,7 @@ function App() {
       alert("Please select a valid recipient");
       return;
     }
+    setLoading(true); // Start loading
     try {
       const response = await axios.post("http://localhost:3001/transfer", {
         from: entities[selectedEntity].address,
@@ -104,7 +106,6 @@ function App() {
       setOnChainLogs((prevLogs) => {
         const updatedLogs = [newOnChainLogSender, newOnChainLogReceiver, ...prevLogs];
         updatedLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        console.log("Updated onChainLogs:", updatedLogs);
         return updatedLogs;
       });
       setLastTransactionId(transactionId);
@@ -115,7 +116,9 @@ function App() {
     } catch (error) {
       console.error("Error:", error.message);
       const errorMsg = error.response?.data?.details || error.response?.data?.error || error.message;
-      alert(`Transaction failed: ${errorMsg.includes("Entity not authorized") ? "Receiver not authorized to log; logged via admin instead" : errorMsg}`);
+      alert(`Transaction failed: ${errorMsg}`);
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -123,7 +126,6 @@ function App() {
   const closeTxModal = () => setSelectedTx(null);
   const closeSuccessModal = () => setShowSuccessModal(false);
 
-  // Helper to map address to name with address
   const getEntityDisplay = (address) => {
     const entity = Object.values(entities).find((e) => e.address === address);
     return entity ? `${entity.name} (${entity.address.slice(0, 6)}...)` : `${address.slice(0, 6)}...`;
@@ -167,7 +169,13 @@ function App() {
               <option key={key} value={key}>{entities[key].name}</option>
             ))}
           </select>
-          <button onClick={sendFiatTransaction}>Send</button>
+          <button onClick={sendFiatTransaction} disabled={loading}>
+            {loading ? (
+            <span className="spinner"></span>
+            ) : (
+            "Send"
+            )}
+          </button>
         </div>
 
         <div className="logs-container">
@@ -232,8 +240,16 @@ function App() {
               </>
             ) : (
               <>
-                <p><strong>Sender:</strong> {getEntityDisplay(selectedTx.entity)}</p>
-                <p><strong>Recipient:</strong> {getEntityDisplay(selectedTx.recipient)}</p>
+                <p><strong>Sender:</strong> 
+                  {selectedTx.purpose.startsWith("Received:") 
+                    ? getEntityDisplay(selectedTx.recipient) 
+                    : getEntityDisplay(selectedTx.entity)}
+                </p>
+                <p><strong>Recipient:</strong> 
+                  {selectedTx.purpose.startsWith("Received:") 
+                    ? getEntityDisplay(selectedTx.entity) 
+                    : getEntityDisplay(selectedTx.recipient)}
+                </p>
                 <p><strong>Tx Hash:</strong> {selectedTx.hash}</p>
                 <a href={`${explorerUrl}${selectedTx.hash}`} target="_blank" rel="noopener noreferrer">
                   View on Block Explorer
